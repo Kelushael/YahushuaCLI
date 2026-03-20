@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YahushuaCTLIDE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=Fira+Code:wght@300;400;500&display=swap');
+
+:root {
+  --bg-void: #0a0a0c;
+  --bg-panel: #0f0f14;
+  --bg-panel-hover: #14141c;
+  --border: #1a1a24;
+  --border-glow: #ff6a0030;
+  --orange: #ff6a00;
+  --orange-dim: #ff6a0080;
+  --orange-glow: #ff6a0040;
+  --fire: #ff3300;
+  --amber: #ffaa00;
+  --neon-green: #00ff6a;
+  --neon-cyan: #00e5ff;
+  --neon-red: #ff3355;
+  --text: #e0ddd8;
+  --text-dim: #666670;
+  --text-muted: #3a3a44;
+  --scanline: rgba(255, 106, 0, 0.03);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-void);
+  color: var(--text);
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    var(--scanline) 2px, var(--scanline) 4px
+  );
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(ellipse, var(--orange-glow), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  text-align: center;
+  padding: 30px 0 20px;
+}
+
+.header h1 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 42px;
+  letter-spacing: 12px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ff3300, #ff6a00, #ffaa00, #ff6a00, #ff3300);
+  background-size: 100% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: fireShift 4s ease-in-out infinite;
+}
+
+@keyframes fireShift {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 0% 100%; }
+}
+
+.header .subtitle {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--neon-green);
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--neon-green), 0 0 12px var(--neon-green);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.header .live-tag {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--neon-green);
+  margin-top: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.grid-wide { grid-column: span 2; }
+.grid-full { grid-column: span 3; }
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px;
+  position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.panel:hover {
+  border-color: var(--border-glow);
+  background: var(--bg-panel-hover);
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange-dim), transparent);
+}
+
+.panel-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title .count {
+  background: var(--orange);
+  color: var(--bg-void);
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 1px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #ffffff06;
+}
+.status-row:last-child { border-bottom: none; }
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.status-dot.on { background: var(--neon-green); box-shadow: 0 0 4px var(--neon-green); }
+.status-dot.off { background: var(--neon-red); box-shadow: 0 0 4px var(--neon-red); }
+.status-dot.warn { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+
+.status-label { flex: 1; color: var(--text-dim); font-size: 12px; }
+.status-value { color: var(--text); font-size: 12px; text-align: right; }
+
+.tool-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #ffffff04;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.tool-item:last-child { border-bottom: none; }
+.tool-name { color: var(--amber); font-size: 12px; white-space: nowrap; font-weight: 500; }
+.tool-name.dynamic { color: var(--neon-green); }
+.tool-desc { color: var(--text-dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mem-item { padding: 6px 0; border-bottom: 1px solid #ffffff04; }
+.mem-item:last-child { border-bottom: none; }
+.mem-key { color: var(--neon-cyan); font-size: 12px; font-weight: 500; }
+.mem-val { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+.mem-time { color: var(--text-muted); font-size: 10px; margin-top: 1px; }
+
+.pressure-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 1px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+.pressure-fill { height: 100%; border-radius: 1px; transition: width 0.6s ease, background 0.3s ease; }
+.pressure-fill.low { background: var(--neon-green); }
+.pressure-fill.medium { background: var(--amber); }
+.pressure-fill.high { background: var(--neon-red); box-shadow: 0 0 8px var(--neon-red); }
+
+.context-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
+.context-stat .label { color: var(--text-dim); }
+.context-stat .val { color: var(--text); }
+
+.log-entry { padding: 5px 0; border-bottom: 1px solid #ffffff04; font-size: 11px; line-height: 1.5; }
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--text-muted); font-size: 10px; margin-right: 8px; }
+.log-role { font-weight: 600; margin-right: 6px; font-size: 11px; }
+.log-role.user { color: var(--orange); }
+.log-role.assistant { color: var(--neon-cyan); }
+.log-role.tool_call { color: var(--amber); }
+.log-content { color: var(--text-dim); word-break: break-word; }
+
+.empty { color: var(--text-muted); font-size: 11px; font-style: italic; padding: 10px 0; }
+
+.footer {
+  text-align: center;
+  padding: 30px 0 20px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+}
+
+.refresh-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--fire), var(--orange), var(--amber));
+  z-index: 10000;
+  transition: width 2s linear;
+  box-shadow: 0 0 8px var(--orange);
+}
+
+.error-flash {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--neon-red);
+  color: var(--neon-red);
+  padding: 10px 16px;
+  font-size: 11px;
+  border-radius: 2px;
+  z-index: 10001;
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+  .grid-wide, .grid-full { grid-column: span 1; }
+  .header h1 { font-size: 28px; letter-spacing: 6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="refresh-bar" id="refreshBar"></div>
+<div class="error-flash" id="errorFlash">CONNECTION LOST</div>
+
+<div class="shell">
+
+  <div class="header">
+    <h1>YahushuaCTLIDE</h1>
+    <div class="subtitle">command terminal interface &middot; interactive development environment</div>
+    <div class="live-tag"><span class="pulse-dot"></span>LIVE</div>
+  </div>
+
+  <div class="grid">
+
+    <div class="panel" id="statusPanel">
+      <div class="panel-title">SYSTEM STATUS</div>
+      <div id="statusRows"></div>
+    </div>
+
+    <div class="panel" id="contextPanel">
+      <div class="panel-title">CONTEXT ENGINE</div>
+      <div class="pressure-bar"><div class="pressure-fill low" id="pressureFill" style="width: 0%"></div></div>
+      <div id="contextStats">
+        <div class="context-stat"><span class="label">Pressure</span><span class="val" id="pressureVal">--</span></div>
+        <div class="context-stat"><span class="label">Active chunks</span><span class="val" id="activeChunks">--</span></div>
+        <div class="context-stat"><span class="label">Indexed</span><span class="val" id="indexedChunks">--</span></div>
+        <div class="context-stat"><span class="label">Decisions</span><span class="val" id="decisions">--</span></div>
+        <div class="context-stat"><span class="label">DB size</span><span class="val" id="dbSize">--</span></div>
+      </div>
+    </div>
+
+    <div class="panel" id="platformPanel">
+      <div class="panel-title">PLATFORM</div>
+      <div id="platformInfo"></div>
+    </div>
+
+    <div class="panel grid-wide" id="toolsPanel">
+      <div class="panel-title">TOOLS <span class="count" id="toolCount">--</span></div>
+      <div id="toolsList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px;"></div>
+    </div>
+
+    <div class="panel" id="memoryPanel">
+      <div class="panel-title">MEMORY <span class="count" id="memCount">--</span></div>
+      <div id="memoryList"></div>
+    </div>
+
+    <div class="panel grid-full" id="logPanel">
+      <div class="panel-title">CONVERSATION LOG <span class="count" id="logCount">--</span></div>
+      <div id="logFeed" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">YahushuaCTLIDE &middot; AXIS MUNDI &middot; ZERO CONFIG</div>
+
+</div>
+
+<script>
+const API_BASE = 'http://127.0.0.1:7777';
+const POLL_INTERVAL = 2000;
+let consecutiveErrors = 0;
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function statusRow(label, value, ok) {
+  const dot = ok ? 'on' : 'off';
+  return '<div class="status-row">'
+    + '<div class="status-dot ' + dot + '"></div>'
+    + '<div class="status-label">' + esc(label) + '</div>'
+    + '<div class="status-value">' + esc(String(value)) + '</div>'
+    + '</div>';
+}
+
+function renderStatus(data) {
+  let html = '';
+  html += statusRow('Auth token', data.token.present ? data.token.preview : 'MISSING', data.token.present);
+  html += statusRow('Model server', data.model.host + ':' + data.model.port, true);
+  html += statusRow('Remote', data.remote.enabled ? data.remote.url : 'disabled', data.remote.enabled);
+  html += statusRow('Tools', data.tools.builtin + ' + ' + data.tools.dynamic + ' dynamic', true);
+  html += statusRow('Memories', data.memory.count, data.memory.count > 0);
+  html += statusRow('Config', 'v' + data.config_version, true);
+  document.getElementById('statusRows').innerHTML = html;
+}
+
+function renderPlatform(data) {
+  const pi = data.platform;
+  let html = '';
+  html += '<div class="context-stat"><span class="label">OS</span><span class="val">' + esc(pi.platform) + '</span></div>';
+  html += '<div class="context-stat"><span class="label">Python</span><span class="val">' + esc(pi.python_version) + '</span></div>';
+  html += '<div class="context-stat"><span class="label">Home</span><span class="val" style="font-size:10px">' + esc(pi.home) + '</span></div>';
+  html += '<div class="context-stat"><span class="label">Mobile</span><span class="val">' + (pi.is_mobile ? 'YES' : 'NO') + '</span></div>';
+  html += '<div class="context-stat"><span class="label">Tools</span><span class="val">' + pi.tools.length + ' platform</span></div>';
+  document.getElementById('platformInfo').innerHTML = html;
+}
+
+function renderContext(data) {
+  if (data.error) return;
+  const s = data.stats;
+  const p = data.pressure;
+  const pct = Math.round((p.pressure || 0) * 100);
+  const cls = pct > 80 ? 'high' : pct > 50 ? 'medium' : 'low';
+
+  const fill = document.getElementById('pressureFill');
+  fill.style.width = pct + '%';
+  fill.className = 'pressure-fill ' + cls;
+
+  document.getElementById('pressureVal').textContent = pct + '% (' + (p.status || '?') + ')';
+  document.getElementById('activeChunks').textContent = s.active_chunks;
+  document.getElementById('indexedChunks').textContent = s.indexed_chunks;
+  document.getElementById('decisions').textContent = s.keeps + 'K ' + s.discards + 'D ' + s.purges + 'P';
+  document.getElementById('dbSize').textContent = s.db_size_kb + ' KB';
+}
+
+function renderTools(data) {
+  document.getElementById('toolCount').textContent = data.total;
+  let html = '';
+  for (const t of data.builtin) {
+    html += '<div class="tool-item"><span class="tool-name">' + esc(t.name) + '</span><span class="tool-desc">' + esc(t.description) + '</span></div>';
+  }
+  for (const t of data.dynamic) {
+    html += '<div class="tool-item"><span class="tool-name dynamic">' + esc(t.name) + '</span><span class="tool-desc">' + esc(t.description) + '</span></div>';
+  }
+  document.getElementById('toolsList').innerHTML = html || '<div class="empty">No tools loaded</div>';
+}
+
+function renderMemory(data) {
+  document.getElementById('memCount').textContent = data.count;
+  if (data.count === 0) {
+    document.getElementById('memoryList').innerHTML = '<div class="empty">No memories stored</div>';
+    return;
+  }
+  let html = '';
+  for (const m of data.memories) {
+    html += '<div class="mem-item">'
+      + '<div class="mem-key">' + esc(m.key) + '</div>'
+      + '<div class="mem-val">' + esc(m.value_preview) + '</div>'
+      + '<div class="mem-time">' + esc(m.updated) + '</div>'
+      + '</div>';
+  }
+  document.getElementById('memoryList').innerHTML = html;
+}
+
+function renderLog(data) {
+  document.getElementById('logCount').textContent = data.count;
+  if (data.count === 0) {
+    document.getElementById('logFeed').innerHTML = '<div class="empty">No conversation yet</div>';
+    return;
+  }
+  let html = '';
+  const entries = data.entries.slice().reverse();
+  for (const e of entries) {
+    const time = e.timestamp ? (e.timestamp.split('T')[1] || '').split('.')[0] : '';
+    const role = e.role || '?';
+    const content = esc((e.content || '').substring(0, 200));
+    html += '<div class="log-entry">'
+      + '<span class="log-time">' + esc(time) + '</span>'
+      + '<span class="log-role ' + esc(role) + '">' + esc(role) + '</span>'
+      + '<span class="log-content">' + content + '</span>'
+      + '</div>';
+  }
+  document.getElementById('logFeed').innerHTML = html;
+}
+
+function animateRefreshBar() {
+  const bar = document.getElementById('refreshBar');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  requestAnimationFrame(function() {
+    bar.style.transition = 'width ' + POLL_INTERVAL + 'ms linear';
+    bar.style.width = '100%';
+  });
+}
+
+async function poll() {
+  animateRefreshBar();
+  try {
+    const responses = await Promise.all([
+      fetch(API_BASE + '/api/status').then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/api/tools').then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/api/memory').then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/api/context').then(function(r) { return r.json(); }),
+      fetch(API_BASE + '/api/log').then(function(r) { return r.json(); }),
+    ]);
+
+    renderStatus(responses[0]);
+    renderPlatform(responses[0]);
+    renderContext(responses[3]);
+    renderTools(responses[1]);
+    renderMemory(responses[2]);
+    renderLog(responses[4]);
+
+    consecutiveErrors = 0;
+    document.getElementById('errorFlash').style.display = 'none';
+  } catch (e) {
+    consecutiveErrors++;
+    if (consecutiveErrors > 2) {
+      document.getElementById('errorFlash').style.display = 'block';
+    }
+  }
+  setTimeout(poll, POLL_INTERVAL);
+}
+
+poll();
+</script>
+
+</body>
+</html>
