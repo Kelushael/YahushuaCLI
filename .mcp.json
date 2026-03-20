@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sovereign": {
+      "command": "python3",
+      "args": ["/home/marcus/sovereign-agent/mcp_server.py"]
+    }
+  }
+}
